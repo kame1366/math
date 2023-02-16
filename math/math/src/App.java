@@ -1,80 +1,128 @@
-import java.util.Scanner;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 
-public class App {
-    public static void main(String[] args) throws Exception {
-            Scanner(args);
-            
-    }
-    public static void Scanner(String[] args) throws Exception {
-        System.out.println("足し算は1・引き算は2・掛け算は3・割り算は4を入力してください");
- 
-        try (Scanner scan = new Scanner(System.in)) {
-            int str = scan.nextInt();
+public class App extends JFrame {
 
-            switch (str) {
-                    case 1:
-                        System.out.println("足される数を入力してください");
+	private static final long serialVersionUID = 1L;
 
-                        Scanner a = new Scanner(System.in);
+	JPanel contentPane = new JPanel();
+	BorderLayout borderLayout1 = new BorderLayout();
+	JTextField result = new JTextField(""); //計算結果を表示するテキストフィールド
+	double stackedValue = 0.0; //演算子ボタンを押す前にテキストフィールドにあった値
+	boolean isStacked = false; //stackedValueに数値を入力したかどうか
+	boolean afterCalc = false; //演算子ボタンを押した後かどうか
+	String currentOp = ""; //押された演算子ボタンの名前
+	public static void main(String[] args) {
+		
+	}
+	//フレームのビルド
+	public void DentakuFrame() {
+		contentPane.setLayout(borderLayout1);
+		this.setSize(new Dimension(250, 300));
+		this.setTitle("電子式卓上計算機");
+		this.setContentPane(contentPane);
 
-                        int x = a.nextInt();
+		contentPane.add(result, BorderLayout.NORTH); //テキストフィールドを配置
 
-                        System.out.println("足す数を入力してください。");
+		JPanel keyPanel = new JPanel(); //ボタンを配置するパネルを用意
+		keyPanel.setLayout(new GridLayout(4, 4)); //4行4列のGridLayoutにする
+		contentPane.add(keyPanel, BorderLayout.CENTER);
 
-                        Scanner b = new Scanner(System.in);
+		keyPanel.add(new NumberButton("7"), 0); //ボタンをレイアウトにはめこんでいく
+		keyPanel.add(new NumberButton("8"), 1);
+		keyPanel.add(new NumberButton("9"), 2);
+		keyPanel.add(new CalcButton("÷"), 3);
+		keyPanel.add(new NumberButton("4"), 4);
+		keyPanel.add(new NumberButton("5"), 5);
+		keyPanel.add(new NumberButton("6"), 6);
+		keyPanel.add(new CalcButton("×"), 7);
+		keyPanel.add(new NumberButton("1"), 8);
+		keyPanel.add(new NumberButton("2"), 9);
+		keyPanel.add(new NumberButton("3"), 10);
+		keyPanel.add(new CalcButton("－"), 11);
+		keyPanel.add(new NumberButton("0"), 12);
+		keyPanel.add(new NumberButton("."), 13);
+		keyPanel.add(new CalcButton("＋"), 14);
+		keyPanel.add(new CalcButton("＝"), 15);
 
-                        int y = b.nextInt();
+		contentPane.add(new ClearButton(), BorderLayout.SOUTH);//Cボタンを配置する
+		this.setVisible(true);
+	}
 
-                        System.out.println(x + y);
-                        break;
-                    case 2:
+	/* テキストフィールドに引数の文字列をつなげる */
+	public void appendResult(String c) {
+		if (!afterCalc) //演算子ボタンを押した直後でないなら
+			result.setText(result.getText() + c); //押したボタンの名前をつなげる
+		else {
+			result.setText(c); //押したボタンの文字列だけを設定する（いったんクリアしたかに見える）
+			afterCalc = false;
+		}
+	}
 
-                        System.out.println("引かれる数を入力してください");
+	/* 数字を入力するボタンの定義 */
+	public class NumberButton extends JButton implements ActionListener {
+		private static final long serialVersionUID = 1L;
 
-                        Scanner c = new Scanner(System.in);
+		public NumberButton(String keyTop) {
+			super(keyTop); //JButtonクラスのコンストラクタを呼び出す
+			this.addActionListener(this); //このボタンにアクションイベントのリスナを設定
+		}
 
-                        int n = c.nextInt();
+		public void actionPerformed(ActionEvent evt) {
+			String keyNumber = this.getText(); //ボタンの名前を取り出す
+			appendResult(keyNumber); //ボタンの名前をテキストフィールドにつなげる
+		}
+	}
 
-                        System.out.println("引く数を入力してください。");
+	/* 演算子ボタンを定義 */
+	public class CalcButton extends JButton implements ActionListener {
+		private static final long serialVersionUID = 1L;
 
-                        Scanner d = new Scanner(System.in);
+		public CalcButton(String op) {
+			super(op);
+			this.addActionListener(this);
+		}
 
-                        int m = d.nextInt();
+		public void actionPerformed(ActionEvent e) {
+			if (isStacked) { //以前に演算子ボタンが押されたのなら計算結果を出す
+				double resultValue = (Double.valueOf(result.getText()))
+						.doubleValue();
+				if (currentOp.equals("＋")) //演算子に応じて計算する
+					stackedValue += resultValue;
+				else if (currentOp.equals("－"))
+					stackedValue -= resultValue;
+				else if (currentOp.equals("×"))
+					stackedValue *= resultValue;
+				else if (currentOp.equals("÷"))
+					stackedValue /= resultValue;
+				result.setText(String.valueOf(stackedValue)); //計算結果をテキストフィールドに設定
+			}
+			currentOp = this.getText(); //ボタン名から押されたボタンの演算子を取り出す
+			stackedValue = (Double.valueOf(result.getText())).doubleValue();
+			afterCalc = true;
+			if (currentOp.equals("＝"))
+				isStacked = false;
+			else
+				isStacked = true;
+		}
+	}
 
-                        System.out.println(n - m);
-                        break;
-                    case 3:
-                        
-                        System.out.println("かけられる数を入力してください");
+	/* クリアボタンの定義 */
+	public class ClearButton extends JButton implements ActionListener {
 
-                        Scanner e = new Scanner(System.in);
+		private static final long serialVersionUID = 1L;
 
-                        int w = e.nextInt();
+		public ClearButton() {
+			super("C");
+			this.addActionListener(this);
+		}
 
-                        System.out.println("かける数を入力してください。");
-
-                        Scanner f = new Scanner(System.in);
-
-                        int z = f.nextInt();
-
-                        System.out.println(w * z);
-                        break;
-                    case 4:
-                        System.out.println("割られる数を入力してください");
-
-                        Scanner g = new Scanner(System.in);
-
-                        int p = g.nextInt();
-
-                        System.out.println("割る数を入力してください。");
-
-                        Scanner h = new Scanner(System.in);
-
-                        int q = h.nextInt();
-
-                        System.out.println(p / q);
-                        break;
-                }
-            }   
-    }
+		public void actionPerformed(ActionEvent evt) {
+			stackedValue = 0.0;
+			afterCalc = false;
+			isStacked = false;
+			result.setText("");
+		}
+	}
 }
